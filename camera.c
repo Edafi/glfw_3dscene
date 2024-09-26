@@ -3,8 +3,8 @@
 #define GL3_PROTOTYPES 1
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
-#include <GL/glx.h>    
-#include <stdio.h>
+#include <GL/glx.h>
+#include <stdio.h>    
 #define true 1
 #define false 0
 #define GLEW_STATIC
@@ -12,44 +12,21 @@
 #define WINDOW_HEIGHT 900 
 
 float cameraPosX = 0.0, cameraPosY = 0.0; 
-float lightPosition[] = {1, 1, 3, 1};
 
-float xAlpha = 90;
-float zAlpha = 90;
+double yaw = 60;
+double pitch = 30;
+double xMove = 0;
+double yMove = 0;
+double lastX =  1600.0f / 2.0;
+double lastY =  900.0 / 2.0;
 
-int A=0, D=0, W=0, S=0, Up=0, Down=0, Left=0, Right=0;
+int firstMouse = 0;
+
+int A=0, D=0, W=0, S=0;
 
 int ADD_FRAMETIME = 0;
 
 void playerInput(GLFWwindow* window, int key, int scancode, int action, int mods){
-
-    float verSpeed = 0;
-    float horSpeed = 0;
-
-    int stateLeft = glfwGetKey(window, GLFW_KEY_LEFT);
-    if (stateLeft == GLFW_PRESS){
-        Left = 1;
-    }
-    else
-        Left = 0;
-    int stateRight = glfwGetKey(window, GLFW_KEY_RIGHT);
-    if(stateRight == GLFW_PRESS){
-        Right = 1;
-    }
-    else
-        Right = 0;
-    int stateUp = glfwGetKey(window, GLFW_KEY_UP );
-    if(stateUp == GLFW_PRESS){
-        Up = 1;
-    }
-    else
-        Up = 0;
-    int stateDown = glfwGetKey(window, GLFW_KEY_DOWN);
-    if(stateDown == GLFW_PRESS){
-        Down = 1;
-    }
-    else
-        Down = 0;
 
     int stateW = glfwGetKey(window, GLFW_KEY_W);
     if (stateW == GLFW_PRESS){
@@ -77,50 +54,63 @@ void playerInput(GLFWwindow* window, int key, int scancode, int action, int mods
         A = 0;
 }
 
+void mouse_callback(GLFWwindow* window, double xPos, double yPos){
+
+    if (firstMouse)
+    {
+        lastX = xPos;
+        lastY = yPos;
+        firstMouse = false;
+    }
+
+    double xoffset = xPos - lastX;
+    double yoffset = -lastY + yPos; // reversed since y-coordinates go from bottom to top
+    lastX = xPos;
+    lastY = yPos;
+
+    double sensitivity = 0.05f; // change this value to your liking
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    pitch += xoffset;
+    yaw += yoffset;
+
+    // make sure that when pitch is out of bounds, screen doesn't get flipped
+    if (yaw > 90.0f)
+        yaw = 90.0f;
+    if (yaw < 0.0f)
+        yaw = 0.0f;
+}
+
 void moveCamera(){
-    float verSpeed = 0;
-    float horSpeed = 0;
-    if (Left == 1){
-        zAlpha++;
-    }
-    if(Right == 1){
-        zAlpha--;
-    }
-    if(Down == 1){
-        xAlpha = ++xAlpha > 180 ? 180 : xAlpha;
-    }
-    if(Up == 1){
-        xAlpha = --xAlpha < 0 ? 0 : xAlpha;
-    }
-
-    float angle = -zAlpha / 180 * M_PI;
-
+    float pitchRadian = -pitch / 180 * M_PI;
     if (W == 1){
-        verSpeed = 0.1;
+        xMove = 0.1;
     }
     if(S == 1){
-        verSpeed = -0.1;
+        xMove = -0.1;
     }
     if(D == 1){
-        horSpeed = 0.1;
+        yMove = 0.1;
     }
     if(A == 1){
-        horSpeed = -0.1;
+        yMove = -0.1;
     }
-    if (verSpeed != 0)
+    if (xMove)
     {
-        cameraPosX += sin(angle) * verSpeed;
-        cameraPosY += cos(angle) * verSpeed;
+        cameraPosX += sin(pitchRadian) * xMove;
+        cameraPosY += cos(pitchRadian) * xMove;
     };
-    if (horSpeed != 0)
+    if (yMove)
     {
-        cameraPosX += sin(angle + 0.5 * M_PI) * horSpeed;
-        cameraPosY += cos(angle + 0.5 * M_PI) * horSpeed;
+        cameraPosX += sin(pitchRadian + 0.5 * M_PI) * yMove;
+        cameraPosY += cos(pitchRadian + 0.5 * M_PI) * yMove;
     };
-    glRotatef(-xAlpha, 1, 0, 0);
-    glRotatef(-zAlpha, 0, 0, 1);
-
+    glRotatef(-yaw, 1, 0, 0);
+    glRotatef(-pitch, 0, 0, 1);
     glTranslatef(-cameraPosX, -cameraPosY, 0);
-
-    printf("%d%d%d%d  %d%d%d%d\n", A, D, W, S, Left, Right, Up, Down);
+    xMove = 0;
+    yMove = 0;
+    printf("%d%d%d%d\n", A, D, W, S);
 }
+
