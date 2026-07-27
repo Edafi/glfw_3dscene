@@ -23,7 +23,7 @@ double lastY =  900.0 / 2.0;
 int firstMouse = 0;
 
 int A=0, D=0, W=0, S=0;
-
+int up = 0, down = 0, left = 0, right = 0;
 int ADD_FRAMETIME = 0;
 
 void playerInput(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -52,6 +52,26 @@ void playerInput(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else
         A = 0;
+
+	int stateUP = glfwGetKey(window, GLFW_KEY_UP);
+	if (stateUP == GLFW_PRESS)
+		up = 1;
+	else up = 0;
+
+	int stateDOWN = glfwGetKey(window, GLFW_KEY_DOWN);
+	if (stateDOWN == GLFW_PRESS)
+		down = 1;
+	else down = 0;
+	
+	int stateLEFT = glfwGetKey(window, GLFW_KEY_LEFT);
+	if (stateLEFT == GLFW_PRESS)
+		left = 1;
+	else left = 0;
+	
+	int stateRIGHT = glfwGetKey(window, GLFW_KEY_RIGHT);
+	if (stateRIGHT == GLFW_PRESS)
+		right = 1;
+	else right = 0;
 }
 
 void mouse_callback(GLFWwindow* window, double xPos, double yPos){
@@ -64,7 +84,7 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos){
     }
 
     double xoffset = xPos - lastX;
-    double yoffset = -lastY + yPos; // reversed since y-coordinates go from bottom to top
+    double yoffset = +lastY - yPos; // reversed since y-coordinates go from bottom to top
     lastX = xPos;
     lastY = yPos;
 
@@ -74,8 +94,8 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos){
 
     pitch += xoffset;
     yaw += yoffset;
-
-    // make sure that when pitch is out of bounds, screen doesn't get flipped
+    
+	// make sure that when pitch is out of bounds, screen doesn't get flipped
     if (yaw > 90.0f)
         yaw = 90.0f;
     if (yaw < 0.0f)
@@ -106,11 +126,28 @@ void moveCamera(){
         cameraPosX += sin(pitchRadian + 0.5 * M_PI) * yMove;
         cameraPosY += cos(pitchRadian + 0.5 * M_PI) * yMove;
     };
-    glRotatef(-yaw, 1, 0, 0);
+
+	double sensitivity_keyboard = 0.5f;
+	if (up == 1)
+		yaw -= sensitivity_keyboard;
+	else if (down == 1)
+		yaw += sensitivity_keyboard;
+	
+	if (left == 1)
+		pitch -= sensitivity_keyboard;
+	else if (right == 1)
+		pitch += sensitivity_keyboard;
+
+    if (yaw > 180.0f)
+        yaw = 180.0f;
+    if (yaw < 0.0f)
+        yaw = 0.0f;
+    
+	glRotatef(-yaw, 1, 0, 0);
     glRotatef(-pitch, 0, 0, 1);
     glTranslatef(-cameraPosX, -cameraPosY, 0);
     xMove = 0;
     yMove = 0;
-    printf("%d%d%d%d\n", A, D, W, S);
+    //printf("%d%d%d%d\n", left, up, down, right);
 }
 

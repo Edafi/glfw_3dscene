@@ -319,8 +319,8 @@ int main(){
 
     while (!glfwWindowShouldClose(window))
     {
-        glfwSetCursorPosCallback(window, mouse_callback);
         glfwSetKeyCallback(window, playerInput);
+        glfwSetCursorPosCallback(window, mouse_callback);
         processInputEsc(window);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -346,7 +346,7 @@ int main(){
         glPopMatrix();
         glPushMatrix(); 
         glPopMatrix();
-        lightPosition[0] = 10 * sin(angle * 0.1);
+        lightPosition[0] = 10 * sin(angle * 0.05);
         angle += 1.0f;
         glfwSwapBuffers(window);
         glfwPollEvents();
